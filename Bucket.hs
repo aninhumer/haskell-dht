@@ -49,7 +49,7 @@ findNode nid (BucketTable local bs) =
                         [] -> last bs
           index = log2 . complement $ nid `xor` local
 
-getNear :: BucketTable -> [Node]
-getNear (BucketTable local bs) =
-    take 8 . sortBy (comparing $ nodeDist local) . concat $ bs
+getNear :: NodeID -> BucketTable -> [Node]
+getNear target (BucketTable _ bs) =
+    take 8 . sortBy (comparing $ nodeDist target) . concat $ bs
 
