@@ -1,5 +1,5 @@
 
-module Data.DHTBucket (Bucket, addNode) where
+module Data.DHTBucket (BucketTable, addNode) where
 import Data.List (partition)
 import Data.Bits
 import Data.LargeWord (Word160)
@@ -14,25 +14,20 @@ data Node = Node {
 
 nodeBit i = (`testBit` i) . getNodeID
 
-data BucketTree = BucketTree NodeID Bucket
+data BucketTable = BucketTable NodeID [[Node]]
 
-data Bucket = Branch [Node] Bucket | End
-
-isEnd End = True
-isEnd _ = False
-
-addNode :: Node -> BucketTree -> BucketTree
-addNode new (BucketTree local bucket) = let
-    add _ End = Branch [new] End
-    add a (Branch nodes next)
-        | takeNext         = Branch nodes (add (a - 1) next)
-        | length nodes < 8 = Branch (new:nodes) next
-        | not $ null rest  = Branch (new:goods ++ tail rest) next
-        | isEnd next       = add a (Branch wides (Branch locals End))
-        | otherwise        = Branch nodes next
+addNode :: Node -> BucketTable -> BucketTable
+addNode new (BucketTable local bucket) = let
+    add _ [] = [[new]]
+    add a (b:bs)
+        | takeNext        = b : add (a - 1) bs
+        | length b < 8    = (new:b) : bs
+        | not $ null rest = (new:goods ++ tail rest) : bs
+        | null bs         = add a [wides,locals]
+        | otherwise       = b:bs
       where
-        takeNext = (not . isEnd) next && nodeBit a new == localBit
+        takeNext = (not . null) bs && nodeBit a new == localBit
         localBit = testBit local a
-        (goods, rest) = span isGood nodes
-        (locals, wides) = partition ((== localBit) . nodeBit a) nodes
-    in BucketTree local $ add 159 bucket
+        (goods, rest) = span isGood b
+        (locals, wides) = partition ((== localBit) . nodeBit a) b
+    in BucketTable local $ add 159 bucket
