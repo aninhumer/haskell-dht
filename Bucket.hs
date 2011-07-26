@@ -1,6 +1,7 @@
 
 module Data.DHTBucket (BucketTable, addNode, getNear) where
 import Data.List
+import Data.Ord (comparing)
 import Data.Bits
 import Data.LargeWord (Word160)
 import Data.Function (on)
@@ -34,11 +35,10 @@ addNode new (BucketTable local bucket) = let
         | not $ null rest = (new:goods ++ tail rest) : bs
         | null bs         = add a [wides,locals]
         | otherwise       = b:bs
-      where
-        takeNext = (not . null) bs && isLocal new
-        isLocal n = nodeBit a n == testBit local a
-        (goods, rest) = span isGood b
-        (locals, wides) = partition isLocal b
+        where takeNext = (not . null) bs && isLocal new
+              isLocal n = nodeBit a n == testBit local a
+              (goods, rest) = span isGood b
+              (locals, wides) = partition isLocal b
     in BucketTable local $ add 159 bucket
 
 findNode :: NodeID -> BucketTable -> Maybe Node
@@ -51,5 +51,5 @@ findNode nid (BucketTable local bs) =
 
 getNear :: BucketTable -> [Node]
 getNear (BucketTable local bs) =
-    take 8 . sortBy (compare `on` nodeDist local) . concat $ bs
+    take 8 . sortBy (comparing $ nodeDist local) . concat $ bs
 
