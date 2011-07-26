@@ -1,6 +1,6 @@
 
-module Data.DHTBucket (BucketTable, addNode) where
-import Data.List (partition)
+module Data.DHTBucket (BucketTable, addNode, getNear) where
+import Data.List (partition, sortBy)
 import Data.Bits
 import Data.LargeWord (Word160)
 
@@ -13,6 +13,9 @@ data Node = Node {
     }
 
 nodeBit i = (`testBit` i) . getNodeID
+
+nodeDist :: NodeID -> Node -> Word160
+nodeDist local node = local `xor` getNodeID node
 
 data BucketTable = BucketTable NodeID [[Node]]
 
@@ -31,3 +34,10 @@ addNode new (BucketTable local bucket) = let
         (goods, rest) = span isGood b
         (locals, wides) = partition ((== localBit) . nodeBit a) b
     in BucketTable local $ add 159 bucket
+
+getNear :: BucketTable -> [Node]
+getNear (BucketTable local bs) =
+    take 8 . sortBy nodeCompare . concat $ bs
+    where nodeCompare n1 n2 = compare (dist n1) (dist n2)
+          dist = nodeDist local
+
