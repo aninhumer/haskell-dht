@@ -1,6 +1,6 @@
 
 module Data.DHTBucket (BucketTable, addNode, getNear) where
-import Data.List (partition, sortBy)
+import Data.List
 import Data.Bits
 import Data.LargeWord (Word160)
 import Data.Function (on)
@@ -17,6 +17,11 @@ nodeBit i = (`testBit` i) . getNodeID
 
 nodeDist :: NodeID -> Node -> Word160
 nodeDist local node = local `xor` getNodeID node
+
+log2 :: Word160 -> Int
+log2 n = case findIndex (`testBit` 159) (iterate (*2) n) of
+              Just i -> 159 - i
+              Nothing -> 0
 
 data BucketTable = BucketTable NodeID [[Node]]
 
@@ -35,6 +40,14 @@ addNode new (BucketTable local bucket) = let
         (goods, rest) = span isGood b
         (locals, wides) = partition isLocal b
     in BucketTable local $ add 159 bucket
+
+findNode :: NodeID -> BucketTable -> Maybe Node
+findNode nid (BucketTable local bs) =
+    find ((== nid) . getNodeID) bucket
+    where bucket = case drop index bs of
+                        (b:_) -> b
+                        [] -> last bs
+          index = log2 . complement $ nid `xor` local
 
 getNear :: BucketTable -> [Node]
 getNear (BucketTable local bs) =
