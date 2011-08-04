@@ -1,23 +1,12 @@
 
-module Data.DHTBucket (BucketTable, addNode, getNear) where
+module Data.DHT.Bucket (BucketTable, addNode, getNear) where
+
+import Data.DHT.Node
 import Data.List
 import Data.Ord (comparing)
 import Data.Bits
 import Data.LargeWord (Word160)
 import Data.Function (on)
-
-type NodeID = Word160
-
-data Node = Node {
-    isGood    :: Bool,
-    lastSeen  :: Integer,
-    getNodeID :: NodeID
-    }
-
-nodeBit i = (`testBit` i) . getNodeID
-
-nodeDist :: NodeID -> Node -> Word160
-nodeDist local node = local `xor` getNodeID node
 
 log2 :: Word160 -> Int
 log2 n = case findIndex (`testBit` 159) (iterate (*2) n) of
