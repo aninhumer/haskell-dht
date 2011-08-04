@@ -7,12 +7,6 @@ import Data.Ord (comparing)
 import Data.Bits
 import Data.LargeWord (Word160)
 
--- Returns the left to right index of the first high bit in the input
-firstHighBit :: Word160 -> Int
-firstHighBit n = case findIndex id $ nodeBools n of
-              Just i -> i
-              Nothing -> 160
-
 data BucketTable = BucketTable Word160 [[Node]]
 
 addNode :: Node -> BucketTable -> BucketTable
@@ -33,7 +27,7 @@ addNode new (BucketTable local bucket) = let
 findNode :: (NodeID a) => a -> BucketTable -> Maybe Node
 findNode target (BucketTable local buckets) =
     find (nodeEq target) bucket
-    where
+  where
     bucket = case filter fst $ zip bools buckets of
                   ((_,b):_) -> b
                   [] -> last buckets
