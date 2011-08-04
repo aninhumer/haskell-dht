@@ -1,8 +1,10 @@
 
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module Data.DHT.Node
-    (Node, NodeID, nodeID, isGood, lastSeen, nodeEq, nodeBit, nodeDist) where
+module Data.DHT.Node (
+    NodeID, nodeID,
+    Node, isGood, lastSeen,
+    nodeBools, nodeEq, nodeBit, nodeDist) where
 
 import Data.Bits
 import Data.LargeWord (Word160)
@@ -31,4 +33,6 @@ nodeBit i = (`testBit` i) . nodeID
 nodeDist :: (NodeID a, NodeID b) => a -> b -> Word160
 nodeDist local target = nodeID local `xor` nodeID target
 
+nodeBools :: (NodeID a) => a -> [Bool]
+nodeBools node = map (`nodeBit` node) $ reverse [0..159]
 
