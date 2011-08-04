@@ -6,14 +6,13 @@ import Data.List
 import Data.Ord (comparing)
 import Data.Bits
 import Data.LargeWord (Word160)
-import Data.Function (on)
 
-log2 :: Word160 -> Int
-log2 n = case findIndex (`testBit` 159) . take 160 $ iterate (*2) n of
-              Just i -> 159 - i
-              Nothing -> 0
+firstHighBit :: Word160 -> Int
+firstHighBit n = case findIndex (`testBit` 159) . take 160 $ iterate (*2) n of
+              Just i -> i
+              Nothing -> 160
 
-data BucketTable = BucketTable NodeID [[Node]]
+data BucketTable = BucketTable Word160 [[Node]]
 
 addNode :: Node -> BucketTable -> BucketTable
 addNode new (BucketTable local bucket) = let
@@ -30,15 +29,15 @@ addNode new (BucketTable local bucket) = let
               (locals, wides) = partition isLocal b
     in BucketTable local $ add 159 bucket
 
-findNode :: NodeID -> BucketTable -> Maybe Node
-findNode nid (BucketTable local bs) =
-    find ((== nid) . getNodeID) bucket
-    where bucket = case drop index bs of
+findNode :: (NodeID a) => a -> BucketTable -> Maybe Node
+findNode target (BucketTable local buckets) =
+    find (nodeEq target) bucket
+    where bucket = case drop index buckets of
                         (b:_) -> b
-                        [] -> last bs
-          index = log2 . complement $ nid `xor` local
+                        [] -> last buckets
+          index = firstHighBit $ nodeDist target local
 
-getNear :: NodeID -> BucketTable -> [Node]
+getNear :: (NodeID a) => a -> BucketTable -> [Node]
 getNear target (BucketTable _ bs) =
     take 8 . sortBy (comparing $ nodeDist target) . concat $ bs
 
