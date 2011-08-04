@@ -9,7 +9,7 @@ import Data.LargeWord (Word160)
 import Data.Function (on)
 
 log2 :: Word160 -> Int
-log2 n = case findIndex (`testBit` 159) (iterate (*2) n) of
+log2 n = case findIndex (`testBit` 159) . take 160 $ iterate (*2) n of
               Just i -> 159 - i
               Nothing -> 0
 
