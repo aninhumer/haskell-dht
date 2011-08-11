@@ -4,7 +4,7 @@
 module Data.DHT.Node (
     NodeID, nodeID,
     Node, isGood, lastSeen,
-    nodeBools, nodeEq, nodeBit, nodeDist) where
+    nodeEq, nodeBit, nodeDist, nodeAge, nodeBools) where
 
 import Data.Bits
 import Data.Time.Clock (NominalDiffTime)

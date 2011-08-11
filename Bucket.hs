@@ -6,8 +6,12 @@ import Data.List
 import Data.Ord (comparing)
 import Data.Bits
 import Data.LargeWord (Word160)
+import Control.Monad
 
 data BucketTable = BucketTable Word160 [[Node]]
+
+allNodes :: BucketTable -> [Node]
+allNodes (BucketTable _ bs) = concat bs
 
 addNode :: Node -> BucketTable -> BucketTable
 addNode new (BucketTable local bucket) = let
@@ -34,6 +38,7 @@ findNode target (BucketTable local buckets) =
     bools = nodeBools $ nodeDist local target
 
 getNear :: (NodeID a) => a -> BucketTable -> [Node]
-getNear target (BucketTable _ bs) =
-    take 8 . sortBy (comparing $ nodeDist target) . concat $ bs
+getNear target = take 8 . sortBy (comparing $ nodeDist target) . allNodes
 
+getOld :: BucketTable -> IO [Node]
+getOld = filterM (liftM (> 900) . nodeAge) . allNodes
