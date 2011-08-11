@@ -7,6 +7,8 @@ module Data.DHT.Node (
     nodeBools, nodeEq, nodeBit, nodeDist) where
 
 import Data.Bits
+import Data.Time.Clock (NominalDiffTime)
+import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.LargeWord (Word160)
 
 class NodeID a where
@@ -17,7 +19,7 @@ instance (NodeID Word160) where
 
 data Node = Node {
     isGood    :: Bool,
-    lastSeen  :: Integer,
+    lastSeen  :: POSIXTime,
     getNodeID :: Word160
 }
 
@@ -32,6 +34,11 @@ nodeBit i = (`testBit` i) . nodeID
 
 nodeDist :: (NodeID a, NodeID b) => a -> b -> Word160
 nodeDist local target = nodeID local `xor` nodeID target
+
+nodeAge :: Node -> IO NominalDiffTime
+nodeAge n = do
+    now <- getPOSIXTime
+    return $ lastSeen n - now
 
 nodeBools :: (NodeID a) => a -> [Bool]
 nodeBools node = map (`nodeBit` node) $ reverse [0..159]
