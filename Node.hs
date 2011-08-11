@@ -10,6 +10,7 @@ import Data.Bits
 import Data.Time.Clock (NominalDiffTime)
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.LargeWord (Word160)
+import Control.Monad
 
 class NodeID a where
     nodeID :: a -> Word160
@@ -36,9 +37,7 @@ nodeDist :: (NodeID a, NodeID b) => a -> b -> Word160
 nodeDist local target = nodeID local `xor` nodeID target
 
 nodeAge :: Node -> IO NominalDiffTime
-nodeAge n = do
-    now <- getPOSIXTime
-    return $ lastSeen n - now
+nodeAge n = subtract (lastSeen n) `liftM` getPOSIXTime
 
 nodeBools :: (NodeID a) => a -> [Bool]
 nodeBools node = map (`nodeBit` node) $ reverse [0..159]
