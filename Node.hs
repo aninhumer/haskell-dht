@@ -44,10 +44,11 @@ nodeAge n = subtract (lastSeen n) `liftM` getPOSIXTime
 nodeBools :: (NodeID a) => a -> [Bool]
 nodeBools node = map (`nodeBit` node) $ reverse [0..159]
 
-nodeBytes :: (NodeID a) => a -> ByteString
-nodeBytes node = runPut $ do
+word160Bytes :: Word160 -> ByteString
+word160Bytes word = runPut $ do
     putWord64be . hiHalf . hiHalf $ word
     putWord64be . loHalf . hiHalf $ word
     putWord32be . loHalf $ word
-    where word = nodeID node
 
+nodeBytes :: (NodeID a) => a -> ByteString
+nodeBytes = word160Bytes . nodeID
