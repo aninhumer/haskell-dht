@@ -10,8 +10,6 @@ import Data.Binary (encode)
 import System.Random
 import Control.Monad
 
---Note token still needs to be inserted somewhere
-
 type BDictMap = Map String BEncode
 type PacketTemplate = BDictMap
 
