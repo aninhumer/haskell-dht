@@ -4,12 +4,13 @@
 module Data.DHT.Node (
     NodeID, nodeID,
     Node, isGood, lastSeen,
-    nodeEq, nodeBit, nodeDist, nodeAge, nodeBools) where
+    nodeEq, nodeBit, nodeDist, nodeAge, nodeBools, nodeBytes) where
 
 import Data.Bits
 import Data.Time.Clock (NominalDiffTime)
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
-import Data.LargeWord (Word160)
+import Data.LargeWord
+import Data.Binary.Put
 import Control.Monad
 
 class NodeID a where
@@ -41,4 +42,11 @@ nodeAge n = subtract (lastSeen n) `liftM` getPOSIXTime
 
 nodeBools :: (NodeID a) => a -> [Bool]
 nodeBools node = map (`nodeBit` node) $ reverse [0..159]
+
+nodeBytes :: (NodeID a) => a -> ByteString
+nodeBytes node = runPut $ do
+    putWord64be . hiHalf . hiHalf $ word
+    putWord64be . loHalf . hiHalf $ word
+    putWord32be . loHalf $ word
+    where word = nodeID node
 
