@@ -10,6 +10,7 @@ import Data.Bits
 import Data.Time.Clock (NominalDiffTime)
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.LargeWord
+import Data.ByteString.Lazy (ByteString)
 import Data.Binary.Put
 import Control.Monad
 
