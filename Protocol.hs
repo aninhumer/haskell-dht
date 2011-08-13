@@ -6,14 +6,20 @@ import Data.BEncode
 import Data.LargeWord (Word160)
 import Data.ByteString.Lazy.Char8 (ByteString, pack)
 import Data.Map
+import Data.Binary (encode)
+import System.Random
+import Control.Monad
 
 --Note token still needs to be inserted somewhere
 
 type BDictMap = Map String BEncode
 type PacketTemplate = BDictMap
 
-nodeBytes :: (NodeID a) => a -> ByteString
-nodeBytes = undefined
+prepare :: PacketTemplate -> IO ByteString
+prepare packet = do
+    token <- liftM encode (randomIO :: IO Int)
+    return . format $ insert "t" (BString token) packet
+    where format = bPack . BDict
 
 bString :: String -> BEncode
 bString = BString . pack
