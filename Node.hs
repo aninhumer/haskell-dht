@@ -4,7 +4,9 @@
 module Data.DHT.Node (
     NodeID, nodeID,
     Node, isGood, lastSeen,
-    nodeEq, nodeBit, nodeDist, nodeAge, nodeBools, nodeBytes) where
+    nodeEq, nodeBit, nodeDist,
+    nodeAge, nodeBools, nodeBytes,
+    compactNode) where
 
 import Data.Bits
 import Data.Time.Clock (NominalDiffTime)
@@ -52,3 +54,7 @@ word160Bytes word = runPut $ do
 
 nodeBytes :: (NodeID a) => a -> ByteString
 nodeBytes = word160Bytes . nodeID
+
+compactNode :: Node -> ByteString
+compactNode = undefined
+

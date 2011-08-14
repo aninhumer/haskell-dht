@@ -32,9 +32,6 @@ data ReplyT = Pong
             | GotPeers (Either [Node] [Peer]) Token
             | Announced
 
-compactNode :: Node -> ByteString
-compactNode = undefined
-
 compactPeer :: Peer -> ByteString
 compactPeer = undefined
 
