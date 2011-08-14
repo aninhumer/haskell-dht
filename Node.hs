@@ -13,7 +13,9 @@ import Data.Time.Clock (NominalDiffTime)
 import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
 import Data.LargeWord
 import Data.ByteString.Lazy (ByteString)
+import Data.Binary
 import Data.Binary.Put
+import Network.Socket
 import Control.Monad
 
 class NodeID a where
@@ -25,7 +27,8 @@ instance (NodeID Word160) where
 data Node = Node {
     isGood    :: Bool,
     lastSeen  :: POSIXTime,
-    getNodeID :: Word160
+    getNodeID :: Word160,
+    address   :: SockAddr
 }
 
 instance NodeID Node where
@@ -48,13 +51,17 @@ nodeBools node = map (`nodeBit` node) $ reverse [0..159]
 
 word160Bytes :: Word160 -> ByteString
 word160Bytes word = runPut $ do
-    putWord64be . hiHalf . hiHalf $ word
-    putWord64be . loHalf . hiHalf $ word
-    putWord32be . loHalf $ word
+    put . hiHalf . hiHalf $ word
+    put . loHalf . hiHalf $ word
+    put . loHalf $ word
 
 nodeBytes :: (NodeID a) => a -> ByteString
 nodeBytes = word160Bytes . nodeID
 
 compactNode :: Node -> ByteString
-compactNode = undefined
+compactNode node = runPut $ do
+    put $ nodeBytes node
+    put hostIP
+    put port
+    where (SockAddr port hostIP) = nodeAddress node
 
