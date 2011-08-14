@@ -75,14 +75,14 @@ bDataPack = bPack . bWrap
 
 type BDictR a = Reader BEncode (Maybe a)
 
+bGet :: (BData a) => BDictR a
+bGet = reader $ bUnwrap
+
 bGetEntry :: (BData a) => String -> BDictR a
 bGetEntry k = reader extract
     where extract b = do dict <- bUnwrap b
                          entry <- M.lookup k dict
                          bUnwrap entry
-
-bGet :: (BData a) => BDictR a
-bGet = reader $ bUnwrap
 
 bGetIndex :: (BData a) => Int -> BDictR a
 bGetIndex n = reader extract
@@ -91,6 +91,7 @@ bGetIndex n = reader extract
                          bUnwrap value
 
 withBDecode :: BS.ByteString -> BDictR a -> Maybe a
-withBDecode body reader =
-    bRead body >>= runReader reader 
+withBDecode body reader = do
+    bStruct <- bRead body 
+    runReader reader bStruct
 
