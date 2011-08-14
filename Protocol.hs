@@ -1,5 +1,9 @@
 
-module Protocol.DHT () where
+module Protocol.DHT (
+    Message(..),
+    encodePacket,
+    decodePacket
+    ) where
 
 import Data.DHT.Node
 import Data.BData
