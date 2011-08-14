@@ -1,11 +1,16 @@
 
-{-# LANGUAGE UndecidableInstances, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
-module Data.BData (BData, bWrap, bDataPack) where
+module Data.BData (
+    BEncode, BData,
+    BDictW, BListW,
+    bEntry, bAppend,
+    bDataPack ) where
 
 import Data.BEncode
 import Data.ByteString.Lazy.Char8 (ByteString, pack)
 import Data.Map hiding (map)
+import Control.Monad.Writer
 
 class BData a where
     bWrap :: a -> BEncode
@@ -19,17 +24,33 @@ instance BData ByteString where
 instance BData String where
     bWrap = BString . pack
 
-instance (Integral a) => BData a where
-    bWrap = BInt . fromIntegral 
+instance BData Integer where
+    bWrap = BInt
 
-instance (BData a) => BData [a] where
-    bWrap = BList . map bWrap
+instance BData Int where
+    bWrap = BInt . toInteger
 
-instance (BData a) => BData (Map String a) where
-    bWrap = BDict . fmap bWrap
+instance BData [BEncode] where
+    bWrap = BList
 
-instance (BData a) => BData [(String, a)] where
-    bWrap = BDict . fmap bWrap . fromList
+instance BData (Map String BEncode) where
+    bWrap = BDict
+
+type BDictW = Writer [(String, BEncode)] ()
+
+instance BData BDictW where
+    bWrap = BDict . fromList . execWriter
+
+bEntry :: (BData a) => String -> a -> BDictW
+bEntry k v = writer ((), [(k, bWrap v)])
+
+instance BData BListW where
+    bWrap = BList . execWriter
+
+type BListW = Writer [BEncode] ()
+
+bAppend :: (BData a) => a -> BListW
+bAppend v = writer ((), [bWrap v])
 
 bDataPack :: (BData a) => a -> ByteString
 bDataPack = bPack . bWrap
