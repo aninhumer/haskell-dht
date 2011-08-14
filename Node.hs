@@ -28,7 +28,7 @@ data Node = Node {
     isGood    :: Bool,
     lastSeen  :: POSIXTime,
     getNodeID :: Word160,
-    address   :: SockAddr
+    nodeAddress   :: SockAddr
 }
 
 instance NodeID Node where
@@ -63,5 +63,6 @@ compactNode node = runPut $ do
     put $ nodeBytes node
     put hostIP
     put port
-    where (SockAddr port hostIP) = nodeAddress node
+    where (SockAddrInet (PortNum port) hostIP) = nodeAddress node
+    --PARTIAL, fix later
 
