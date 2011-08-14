@@ -12,6 +12,7 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 import qualified Data.Map as M
 import Control.Monad.Writer
 import Control.Monad.Reader
+import Safe (atMay)
 
 class BData a where
     bWrap   :: a -> BEncode
@@ -76,10 +77,18 @@ type BDictR a = Reader BEncode (Maybe a)
 
 bGetEntry :: (BData a) => String -> BDictR a
 bGetEntry k = reader extract
-    where extract b =
-              do dict <- bUnwrap b
-                 entry <- M.lookup k dict
-                 bUnwrap entry
+    where extract b = do dict <- bUnwrap b
+                         entry <- M.lookup k dict
+                         bUnwrap entry
+
+bGet :: (BData a) => BDictR a
+bGet = reader $ bUnwrap
+
+bGetIndex :: (BData a) => Int -> BDictR a
+bGetIndex n = reader extract
+    where extract b = do list <- bUnwrap b
+                         value <- list `atMay` n
+                         bUnwrap value
 
 withBDecode :: BS.ByteString -> BDictR a -> Maybe a
 withBDecode body reader =
