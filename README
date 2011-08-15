@@ -1,0 +1,14 @@
+An implementation of Bittorent DHT (BEP-0005)
+http://www.bittorrent.org/beps/bep_0005.html
+
+Each node in the network chooses an arbitrary 160 bit unique
+ID, and maintains a list of nodes which is distributed based
+on an XOR distance metric to be denser closer to its own ID. 
+Each node also maintains a table mapping 160 bit bittorrent
+info_hashes to peer addresses. When a client wants to lookup
+a torrent, it asks the nodes in its table closest to the
+torrent's info_hash, who will either respond with their
+table entries, or with a set of closer nodes. Once a node
+with table entries is found, or if there are no closer nodes
+to ask, the client gives the closet nodes its address.
+
